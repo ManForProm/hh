@@ -1,18 +1,24 @@
 package com.yahorhous.features.home.presentation.screen
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.absolutePadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -42,10 +48,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.yahorhous.core.design.design.icons.AppIcons
 import com.yahorhous.core.design.design.icons.painterResource
+import com.yahorhous.core.network.model.ButtonData
+import com.yahorhous.core.network.model.Offers
 import com.yahorhous.favorites.presentation.screen.JobCardUtils
-import com.yahorhous.features.home.domain.models.ButtonData
-import com.yahorhous.features.home.domain.models.Recommendation
 import com.yahorhous.features.home.presentation.viewmodel.HomeViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -53,26 +62,23 @@ fun HomeScreen() {
     val homeViewModel: HomeViewModel = koinViewModel()
     val vacancies by homeViewModel.vacancies.collectAsState()
     val recommendations by homeViewModel.recommendations.collectAsState()
-    val choosenFilter by homeViewModel.choosenFilter.collectAsState()
+//    val choosenFilter by homeViewModel.choosenFilter.collectAsState()
+    val favorites by homeViewModel.favorites.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize()) {
         SearchBar()
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             item{
                 RecommendationBlock(recommendations)
-                FilterBar(vacancies.size,choosenFilter,{}, listOf("1","2","3"))
-                Text(
-                    text = "Вакансии для вас",
-                    color = Color.White,
-                    style = MaterialTheme.typography.headlineLarge,
-                    modifier = Modifier.padding(8.dp)
-                )
+//                FilterBar(vacancies.size,choosenFilter,{}, listOf("1","2","3"))
+                TitleText()
             }
             items(vacancies) { vacancy ->
                 JobCardUtils (
                     vacancy = vacancy,
                     onRespond = { },
-                    onFavoriteToggle = { }
+                    onFavoriteToggle = { homeViewModel.toggleFavorite(it)},
+                    isFavorite = favorites.contains(vacancy.id)
                 )
             }
         }
@@ -87,8 +93,9 @@ fun SearchBar() {
             shape = RoundedCornerShape(12.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             modifier = Modifier
-//                .padding(16.dp)
                 .weight(1f)
+                .absolutePadding(right = 8.dp)
+                .height(40.dp)
         ) {
             TextField(
                 colors = TextFieldDefaults.colors(
@@ -105,11 +112,10 @@ fun SearchBar() {
         Card(
             shape = RoundedCornerShape(12.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            modifier = Modifier
-                .padding(16.dp)
+            modifier = Modifier.height(40.dp)
         ) {
             IconButton(onClick = { /* TODO */ }) {
-                Icon(Icons.Default.List, contentDescription = "Filter")
+                Icon(AppIcons.Common.FilterDefault.painterResource(), contentDescription = "Filter")
             }
         }
     }
@@ -123,8 +129,8 @@ fun FilterBar(
 ) {
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
+            .fillMaxWidth(),
+//            .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         var expanded by remember { mutableStateOf(false) }
@@ -132,7 +138,7 @@ fun FilterBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .absolutePadding(left = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // количество вакансий
@@ -179,14 +185,21 @@ fun FilterBar(
         }
     }
 }
-
-
 @Composable
-fun RecommendationBlock(recommendations: List<Recommendation>) {
+fun TitleText(){
+    Text(
+        text = "Вакансии для вас",
+        color = MaterialTheme.colorScheme.onPrimary,
+        style = MaterialTheme.typography.headlineLarge,
+                    modifier = Modifier.absolutePadding(left = 16.dp)
+    )
+}
+@Composable
+fun RecommendationBlock(recommendations: List<Offers>) {
     if (recommendations.isNotEmpty()) {
         LazyRow(modifier = Modifier.padding(8.dp)) {
             items(recommendations) { recommendation ->
-               RecommendationCard(title = recommendation.title, recommendationId = recommendation.id,
+               RecommendationCard(title = recommendation.title , recommendationId = recommendation.id,
                    button = recommendation.button
                )
             }
@@ -204,42 +217,44 @@ fun RecommendationCard(
 ) {
     Card(
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
         modifier = Modifier
-            .padding(16.dp)
-            .widthIn(132.dp)
-            .height(120.dp)
+            .padding(8.dp)
+            .width(200.dp)
+            .heightIn(min = 120.dp)
     ) {
         Row(
-            modifier = modifier
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.Top
         ) {
-
             recommendationId?.let { id ->
                 RecommendationIcon(id = id)
             }
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = if (recommendationId != null) 12.dp else 0.dp)
+                    .padding(start = 8.dp)
             ) {
                 Text(
                     text = title,
-                    color = Color.White,
-                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
                     maxLines = if (button != null) 2 else 3,
                     overflow = TextOverflow.Ellipsis,
-                    lineHeight = 20.sp
+                    lineHeight = 18.sp,
+                    modifier = Modifier.fillMaxWidth()
                 )
-
                 button?.let {
                     Text(
                         text = it.text,
                         color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.labelMedium,
                         modifier = Modifier
-                            .padding(top = 4.dp)
+                            .padding(top = 8.dp)
                             .clickable { onButtonClick?.invoke() }
                     )
                 }
@@ -252,19 +267,26 @@ fun RecommendationCard(
 @Composable
 private fun RecommendationIcon(id: String) {
     val icon = when (id) {
-        "1" -> AppIcons.Common.SearchDefault
-        "2" -> AppIcons.Common.FavoriteDefault
-        "3" -> AppIcons.Common.ResponsesDefault
+        "near_vacancies" -> AppIcons.Common.Map
+        "level_up_resume" -> AppIcons.Common.Star
+        "temporary_job" -> AppIcons.Common.List
         else -> null
     }
 
     icon?.let {
-        Icon(
-            painter = it.painterResource(),
-            contentDescription = null,
-            modifier = Modifier.size(24.dp),
-            tint = LocalContentColor.current
-        )
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .background(color = Color.Blue, shape = CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = it.painterResource(),
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+                tint = LocalContentColor.current
+            )
+        }
     }
 }
 

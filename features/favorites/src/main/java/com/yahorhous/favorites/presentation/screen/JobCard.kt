@@ -16,8 +16,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JobCard(
     viewers: Int,
@@ -28,13 +26,13 @@ fun JobCard(
     experience: String,
     datePublished: String,
     onRespond: () -> Unit,
-    onFavoriteToggle: (Boolean) -> Unit
+    onFavoriteToggle: (Boolean) -> Unit,
+    isFavorite: Boolean
 ) {
-    var isFavorite by remember { mutableStateOf(false) }
+    var isFavoriteState by remember { mutableStateOf(isFavorite) }
 
-    // Анимация изменения цвета кнопки "Избранное"
     val favoriteColor by animateColorAsState(
-        targetValue = if (isFavorite) Color.Red else Color.Gray,
+        targetValue = if (isFavoriteState) Color.Red else Color.Gray,
         animationSpec = tween(durationMillis = 500)
     )
 
@@ -59,24 +57,23 @@ fun JobCard(
                     Text(
                         text = "Сейчас просматривает $viewers человек",
                         color = Color(0xFF32CD32),
-                        style = MaterialTheme.typography.bodySmall,
                         fontSize = 12.sp,
                         modifier = Modifier.weight(1f)
                     )
-                }else{
+                } else {
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
                         text = salary,
                         color = Color.White,
-                        style = MaterialTheme.typography.bodyMedium,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
+
                 IconButton(
                     onClick = {
-                        isFavorite = !isFavorite
-                        onFavoriteToggle(isFavorite)
+                        isFavoriteState = !isFavoriteState
+                        onFavoriteToggle(isFavoriteState)
                     }
                 ) {
                     Icon(
@@ -92,53 +89,35 @@ fun JobCard(
             Text(
                 text = title,
                 color = Color.White,
-                style = MaterialTheme.typography.bodyMedium,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            if (viewers > 0) { Text(
-                text = salary,
-                color = Color.White,
-                style = MaterialTheme.typography.bodyMedium,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            ) }
+            if (viewers > 0) {
+                Text(
+                    text = salary,
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                text = location,
-                color = Color.Gray,
-                fontSize = 14.sp
-            )
-
+            Text(text = location, color = Color.Gray, fontSize = 14.sp)
             Spacer(modifier = Modifier.height(4.dp))
 
-            Text(
-                text = category,
-                color = Color.Gray,
-                style = MaterialTheme.typography.bodyMedium,
-                fontSize = 14.sp
-            )
-
+            Text(text = category, color = Color.Gray, fontSize = 14.sp)
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                text = experience,
-                color = Color.Gray,
-                style = MaterialTheme.typography.bodyMedium,
-                fontSize = 14.sp
-            )
-
+            Text(text = experience, color = Color.Gray, fontSize = 14.sp)
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = "Опубликовано $datePublished",
                 color = Color.Gray,
-                style = MaterialTheme.typography.bodyMedium,
                 fontSize = 12.sp
             )
 
@@ -153,7 +132,6 @@ fun JobCard(
                 Text(
                     text = "Откликнуться",
                     color = Color.Black,
-                    style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -162,21 +140,23 @@ fun JobCard(
     }
 }
 
-
 @Composable
 fun JobCardUtils(
     vacancy: com.yahorhous.core.network.model.Vacancy,
     onRespond: () -> Unit,
-    onFavoriteToggle: (Boolean) -> Unit){
+    onFavoriteToggle: (String) -> Unit,
+    isFavorite: Boolean
+) {
     JobCard(
         viewers = vacancy.lookingNumber ?: 0,
         title = vacancy.title,
         salary = vacancy.salary.full,
-        location = vacancy.address.town,
-        category = vacancy.company,
-        experience = vacancy.experience.previewText,
-        datePublished = vacancy.publishedDate,
-        onRespond = { onRespond },
-        onFavoriteToggle = { isFavorite -> onFavoriteToggle }
+        location = vacancy.address.town ,
+        category = vacancy.company ,
+        experience = vacancy.experience.previewText ,
+        datePublished = vacancy.publishedDate ,
+        onRespond = onRespond,
+        onFavoriteToggle = { isFavorite -> onFavoriteToggle(vacancy.id) },
+        isFavorite = isFavorite
     )
 }

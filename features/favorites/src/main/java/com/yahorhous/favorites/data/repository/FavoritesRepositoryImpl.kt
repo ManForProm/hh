@@ -1,48 +1,68 @@
 package com.yahorhous.favorites.data.repository
 
-import com.yahorhous.favorites.domain.model.Vacancy
+import android.content.Context
+import android.content.SharedPreferences
+import com.yahorhous.core.network.api.moshi
 import com.yahorhous.favorites.domain.repository.FavoritesRepository
+import com.squareup.moshi.Types
+import com.yahorhous.core.network.model.Vacancy
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.StateFlow
 
-class FavoritesRepositoryImpl : FavoritesRepository {
+class FavoritesRepositoryImpl(context: Context) : FavoritesRepository {
 
-    private val _favoritesFlow = MutableStateFlow<List<Vacancy>>(listOf(
-        Vacancy(
-            id = 1,
-            viewers = 7,
-            title = "Дизайнер для маркетплейсов Wildberries, Ozon",
-            salary = "1500-2900 Br",
-            location = "Минск",
-            category = "Еком дизайн",
-            experience = "Опыт от 1 года до 3 лет",
-            datePublished = "16 февраля"
-        ),
-        Vacancy(
-            id = 2,
-            viewers = 5,
-            title = "UI/UX дизайнер для мобильных приложений",
-            salary = "2000-3500 Br",
-            location = "Минск",
-            category = "Мобильный дизайн",
-            experience = "Опыт от 2 до 5 лет",
-            datePublished = "10 февраля"
-        )))
+    private val prefs: SharedPreferences =
+        context.getSharedPreferences("favorites_prefs", Context.MODE_PRIVATE)
 
-    override fun getFavorites(): Flow<List<Vacancy>> = _favoritesFlow
+    // Создаем адаптер для списка вакансий
+    private val jsonAdapter = moshi.adapter(List::class.java)
 
-    override fun getFavoritesCount(): Flow<Int> = _favoritesFlow.map { it.size }
+    // Мы будем хранить список избранных вакансий как StateFlow
+    private val _favoritesFlow = MutableStateFlow<List<Vacancy>>(emptyList())
+
+    // Получение списка избранных вакансий
+    override fun getFavorites(): StateFlow<List<Vacancy>> {
+        val json = prefs.getString("favorites", "[]") ?: "[]"
+        val type = Types.newParameterizedType(List::class.java, Vacancy::class.java)
+        val jsonAdapter = moshi.adapter<List<Vacancy>>(type)
+
+        val favorites = try {
+            jsonAdapter.fromJson(json) ?: emptyList()
+        } catch (e: Exception) {
+            emptyList<Vacancy>()
+        }
+
+        // Обновляем значение в StateFlow
+        _favoritesFlow.value = favorites
+
+        return _favoritesFlow
+    }
+
+    override fun addFavorite(vacancy: Vacancy) {
+        val favorites = _favoritesFlow.value.toMutableList()
+        favorites.add(vacancy)
+        saveFavorites(favorites)
+    }
+
+    override fun removeFavorite(vacancyId: String) {
+        val favorites = _favoritesFlow.value.toMutableList()
+        favorites.removeAll { it.id == vacancyId }
+        saveFavorites(favorites)
+    }
+
+    private fun saveFavorites(favorites: List<Vacancy>) {
+        val json = moshi.adapter(List::class.java).toJson(favorites)
+        prefs.edit().putString("favorites", json).apply()
+    }
 
     override suspend fun toggleFavorite(vacancy: Vacancy) {
-        // Если вакансия уже добавлена в избранное — удаляем, иначе добавляем
         val currentFavorites = _favoritesFlow.value.toMutableList()
         val index = currentFavorites.indexOfFirst { it.id == vacancy.id }
         if (index >= 0) {
             currentFavorites.removeAt(index)
         } else {
-            // Добавляем вакансию и отмечаем ее как избранную
-            currentFavorites.add(vacancy.copy(isFavorite = true))
+            currentFavorites.add(vacancy)
         }
         _favoritesFlow.value = currentFavorites
     }

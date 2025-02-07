@@ -15,7 +15,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.yahorhous.favorites.domain.model.Vacancy
+import com.yahorhous.core.network.model.Vacancy
 import com.yahorhous.favorites.presentation.viewmodel.FavoritesViewModel
 import org.koin.androidx.compose.koinViewModel
 
@@ -29,24 +29,10 @@ fun FavoritesScreen(){
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritesScreenInner(
-    // Список вакансий можно получать из ViewModel; здесь для примера используется статический список
-    favorites: List<Vacancy> = listOf(
-        Vacancy(
-            id = 1,
-            viewers = 0,
-            title = "Здесь нет вакансий",
-            salary = "",
-            location = "",
-            category = "",
-            experience = "",
-            datePublished = ""
-        ),
-    ),
-    // Callback для обработки клика на кнопку "Откликнуться" для конкретной вакансии
+    favorites: List<Vacancy> = emptyList(),
     onRespond: (Vacancy) -> Unit = { /* Реализация отклика */ },
-    // Callback для обработки переключения состояния "избранного"
-    onFavoriteToggle: (Vacancy, Boolean) -> Unit = { vacancy, isFav ->
-        // Например, обновление состояния во ViewModel
+    onFavoriteToggle: (Vacancy) -> Unit = { vacancy ->
+        // Обработать переключение избранного здесь
     }
 ) {
     Scaffold(
@@ -72,14 +58,15 @@ fun FavoritesScreenInner(
                     .padding(paddingValues)
             ) {
                 items(favorites) { vacancy ->
-//                    JobCardUtils(
-//                        vacancy = vacancy,
-//                        onRespond = { onRespond(vacancy) },
-//                        onFavoriteToggle = { isFavorite -> onFavoriteToggle(vacancy, isFavorite) }
-//                    )
+                    JobCard(
+                        vacancy = vacancy,
+                        onRespond = { onRespond(vacancy) },
+                        onFavoriteToggle = {
+//                            onFavoriteToggle(vacancy) // Обрабатываем клик на избранное
+                        }
+                    )
                 }
             }
         }
     )
 }
-

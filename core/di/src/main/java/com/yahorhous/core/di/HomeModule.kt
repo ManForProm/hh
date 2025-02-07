@@ -8,6 +8,6 @@ import org.koin.dsl.module
 
 val homeModule = module {
 //    factory { GetVacanciesUseCase(get()) }
-    viewModel { HomeViewModel(get()) }
+    viewModel { HomeViewModel(get(),get()) }
     single<HomeRepository> { HomeRepositoryImpl(get()) }
 }

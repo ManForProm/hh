@@ -26,6 +26,14 @@ object AppIcons {
 
         val MessagesDefault = R.drawable.ic_messages_default
 
+        val Star = R.drawable.ic_star
+
+        val List = R.drawable.ic_list
+
+        val Map = R.drawable.type_map__state_default
+
+        val FilterDefault = R.drawable.ic_filter_default
+
     }
 }
 

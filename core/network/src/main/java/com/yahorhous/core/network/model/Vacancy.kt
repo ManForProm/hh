@@ -13,14 +13,14 @@ data class VacancyResponse(
 @JsonClass(generateAdapter = true)
 data class Offers (
     @Json(name = "id"    ) val id    : String? = null,
-    @Json(name = "title" ) val title : String? = null,
+    @Json(name = "title" ) val title : String,
     @Json(name ="link"  ) val link  : String? = null,
     @Json(name = "button") val button : ButtonData? = null
 )
 
 @JsonClass(generateAdapter = true)
 data class ButtonData(
-    @Json(name = "text") val text: String? = null
+    @Json(name = "text") val text: String
 )
 @JsonClass(generateAdapter = true)
 data class Vacancy(
