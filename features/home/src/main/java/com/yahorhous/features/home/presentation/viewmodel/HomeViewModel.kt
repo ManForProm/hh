@@ -10,6 +10,7 @@ import com.yahorhous.features.home.domain.repository.HomeRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toSet
 import kotlinx.coroutines.launch
 
@@ -38,19 +39,19 @@ class HomeViewModel(
         viewModelScope.launch {
             _vacancies.value = repository.getVacancies()
             _recommendations.value = repository.getRecommendations()
-            _favorites.value = favoritesRepository.getFavorites().toSet()
+            _favorites.value = favoritesRepository.getFavorites().map { it.map { vacancy -> vacancy.id }.toSet() }
         }
     }
 
-    fun toggleFavorite(vacancyId: String) {
+    fun toggleFavorite(vacancy: Vacancy) {
         viewModelScope.launch {
             val updatedFavorites = _favorites.value.toMutableSet()
-            if (updatedFavorites.contains(vacancyId)) {
-                favoritesRepository.removeFavorite(vacancyId)
-                updatedFavorites.remove(vacancyId)
+            if (updatedFavorites.contains(vacancy.id)) {
+                favoritesRepository.removeFavorite(vacancy.id)
+                updatedFavorites.remove(vacancy.id)
             } else {
-                favoritesRepository.addFavorite(vacancyId)
-                updatedFavorites.add(vacancyId)
+                favoritesRepository.addFavorite(vacancy)
+                updatedFavorites.add(vacancy.id)
             }
             _favorites.value = updatedFavorites
         }

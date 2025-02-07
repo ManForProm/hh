@@ -58,12 +58,13 @@ fun FavoritesScreenInner(
                     .padding(paddingValues)
             ) {
                 items(favorites) { vacancy ->
-                    JobCard(
+                    JobCardUtils(
                         vacancy = vacancy,
                         onRespond = { onRespond(vacancy) },
                         onFavoriteToggle = {
-//                            onFavoriteToggle(vacancy) // Обрабатываем клик на избранное
-                        }
+                            onFavoriteToggle(vacancy) // Обрабатываем клик на избранное
+                        },
+                        isFavorite = true
                     )
                 }
             }
