@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">HH</string>
+    <!-- Общие строки -->
+    <string name="search_hint">Должность, ключевые слова</string>
+    <string name="vacancies_title">Вакансии для вас</string>
+    <string name="show_more">Еще %d вакансии</string>
+
+    <!-- Ошибки -->
+    <string name="error_loading">Ошибка загрузки данных</string>
+</resources>
