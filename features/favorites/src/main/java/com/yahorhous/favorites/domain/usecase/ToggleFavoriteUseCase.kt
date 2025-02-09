@@ -1,6 +1,6 @@
 package com.yahorhous.favorites.domain.usecase
 
-import com.yahorhous.favorites.domain.model.Vacancy
+import com.yahorhous.core.network.model.Vacancy
 import com.yahorhous.favorites.domain.repository.FavoritesRepository
 
 class ToggleFavoriteUseCase(

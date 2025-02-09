@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.yahorhous.core.network.model.Vacancy
 
 @Composable
 fun JobCard(
@@ -144,7 +145,7 @@ fun JobCard(
 fun JobCardUtils(
     vacancy: com.yahorhous.core.network.model.Vacancy,
     onRespond: () -> Unit,
-    onFavoriteToggle: (String) -> Unit,
+    onFavoriteToggle: (Vacancy) -> Unit,
     isFavorite: Boolean
 ) {
     JobCard(
@@ -156,7 +157,7 @@ fun JobCardUtils(
         experience = vacancy.experience.previewText ,
         datePublished = vacancy.publishedDate ,
         onRespond = onRespond,
-        onFavoriteToggle = { isFavorite -> onFavoriteToggle(vacancy.id) },
+        onFavoriteToggle = { _ -> onFavoriteToggle(vacancy)  },
         isFavorite = isFavorite
     )
 }

@@ -1,5 +1,6 @@
 package com.yahorhous.core.navigation
 
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -31,10 +32,28 @@ fun NavGraph(modifier: Modifier,
             FavoritesScreen()
         }
         composable(MenuTab.Messages.route) {
+            MessagesScreen()
         }
         composable(MenuTab.Responses.route) {
+            ResponsesScreen()
         }
         composable(MenuTab.Profile.route) {
+            ProfileScreen()
         }
     }
+}
+
+@Composable
+fun ResponsesScreen() {
+    Text("Экран откликов")
+}
+
+@Composable
+fun MessagesScreen() {
+    Text("Экран сообщений")
+}
+
+@Composable
+fun ProfileScreen() {
+    Text("Экран профиля")
 }

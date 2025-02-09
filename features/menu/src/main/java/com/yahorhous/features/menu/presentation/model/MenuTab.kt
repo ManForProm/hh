@@ -28,12 +28,12 @@ sealed class MenuTab(
     )
 
     object Messages : MenuTab(
-        route = "responses",
+        route = "messages",
         icon = AppIcons.Common.MessagesDefault,
         label = "Сообщения"
     )
     object Profile : MenuTab(
-        route = "responses",
+        route = "profile",
         icon = AppIcons.Common.ProfileDefault,
         label = "Профиль"
     )
@@ -43,6 +43,9 @@ sealed class MenuTab(
             return when (route?.substringBefore("/")) {
                 Search.route -> Search
                 Favorites.route -> Favorites
+                Profile.route -> Profile
+                Messages.route -> Messages
+                Responses.route -> Responses
                 else -> Search
             }
         }

@@ -15,27 +15,20 @@ class FavoritesRepositoryImpl(context: Context) : FavoritesRepository {
     private val prefs: SharedPreferences =
         context.getSharedPreferences("favorites_prefs", Context.MODE_PRIVATE)
 
-    // Создаем адаптер для списка вакансий
-    private val jsonAdapter = moshi.adapter(List::class.java)
+    private val vacancyListType = Types.newParameterizedType(List::class.java, Vacancy::class.java)
+    private val vacancyListAdapter = moshi.adapter<List<Vacancy>>(vacancyListType)
 
-    // Мы будем хранить список избранных вакансий как StateFlow
     private val _favoritesFlow = MutableStateFlow<List<Vacancy>>(emptyList())
 
     // Получение списка избранных вакансий
     override fun getFavorites(): StateFlow<List<Vacancy>> {
         val json = prefs.getString("favorites", "[]") ?: "[]"
-        val type = Types.newParameterizedType(List::class.java, Vacancy::class.java)
-        val jsonAdapter = moshi.adapter<List<Vacancy>>(type)
-
         val favorites = try {
-            jsonAdapter.fromJson(json) ?: emptyList()
+            vacancyListAdapter.fromJson(json) ?: emptyList()
         } catch (e: Exception) {
-            emptyList<Vacancy>()
+            emptyList()
         }
-
-        // Обновляем значение в StateFlow
         _favoritesFlow.value = favorites
-
         return _favoritesFlow
     }
 
@@ -65,5 +58,24 @@ class FavoritesRepositoryImpl(context: Context) : FavoritesRepository {
             currentFavorites.add(vacancy)
         }
         _favoritesFlow.value = currentFavorites
+    }
+
+    private val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key == "favorites") {
+            val json = prefs.getString("favorites", "[]") ?: "[]"
+            _favoritesFlow.value = parseFavorites(json)
+        }
+    }
+
+    init {
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+    }
+
+    private fun parseFavorites(json: String): List<Vacancy> {
+        return try {
+            (vacancyListAdapter.fromJson(json)) ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 }

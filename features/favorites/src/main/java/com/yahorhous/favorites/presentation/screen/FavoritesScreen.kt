@@ -23,17 +23,15 @@ import org.koin.androidx.compose.koinViewModel
 fun FavoritesScreen(){
     val favoritesViewModel: FavoritesViewModel = koinViewModel()
     val favorites by favoritesViewModel.favoritesDetails.collectAsState(initial = emptyList())
-    FavoritesScreenInner(favorites = favorites)
+    FavoritesScreenInner(favorites = favorites, onFavoriteToggle = {vacancy -> favoritesViewModel.toggleFavorite(vacancy)})
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritesScreenInner(
     favorites: List<Vacancy> = emptyList(),
-    onRespond: (Vacancy) -> Unit = { /* Реализация отклика */ },
-    onFavoriteToggle: (Vacancy) -> Unit = { vacancy ->
-        // Обработать переключение избранного здесь
-    }
+    onRespond: (Vacancy) -> Unit = { },
+    onFavoriteToggle: (Vacancy) -> Unit = { vacancy -> }
 ) {
     Scaffold(
         topBar = {
@@ -41,7 +39,8 @@ fun FavoritesScreenInner(
                 title = { Text("Избранное",
                     style = MaterialTheme.typography.headlineLarge,
                     color = Color.White
-                ) },
+                )
+                        },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,)
             )

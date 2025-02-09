@@ -10,5 +10,5 @@ import org.koin.dsl.module
 val favoritesModule = module {
     factory { ToggleFavoriteUseCase(get()) }
     viewModel { FavoritesViewModel(get()) }
-    single<FavoritesRepository> { FavoritesRepositoryImpl() }
+    single<FavoritesRepository> { FavoritesRepositoryImpl(get()) }
 }

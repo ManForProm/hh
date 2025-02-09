@@ -48,9 +48,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.yahorhous.core.design.design.icons.AppIcons
 import com.yahorhous.core.design.design.icons.painterResource
+import com.yahorhous.core.design.design.theme.customColors
 import com.yahorhous.core.network.model.ButtonData
 import com.yahorhous.core.network.model.Offers
 import com.yahorhous.favorites.presentation.screen.JobCardUtils
+import com.yahorhous.features.home.domain.models.RecomendationIconModel
 import com.yahorhous.features.home.presentation.viewmodel.HomeViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -88,38 +90,117 @@ fun HomeScreen() {
 
 @Composable
 fun SearchBar() {
-    Row (modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        // Текстовое поле поиска
         Card(
             shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
             modifier = Modifier
                 .weight(1f)
-                .absolutePadding(right = 8.dp)
-                .height(40.dp)
+                .height(48.dp) // Увеличена высота
         ) {
-            TextField(
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    disabledContainerColor = Color.Transparent,
-                    errorContainerColor = Color.Transparent,
-                ),
-                value = "",
-                onValueChange = {},
-                placeholder = { Text("Должность, ключевые слова") },
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 12.dp)
+            ) {
+                // Иконка поиска
+                Icon(
+                    painter = AppIcons.Common.SearchDefault.painterResource(),
+                    contentDescription = "Search",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
+                )
+
+                TextField(
+                    value = "",
+                    onValueChange = {},
+                    placeholder = {
+                        Text(
+                            "Должность, ключевые слова",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        )
+                    },
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    textStyle = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 8.dp)
+                )
+            }
         }
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        // Кнопка фильтра
         Card(
             shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            modifier = Modifier.height(40.dp)
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
+            modifier = Modifier
+                .size(48.dp) // Квадратная форма
         ) {
-            IconButton(onClick = { /* TODO */ }) {
-                Icon(AppIcons.Common.FilterDefault.painterResource(), contentDescription = "Filter")
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Icon(
+                    painter = AppIcons.Common.FilterDefault.painterResource(),
+                    contentDescription = "Filter",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
             }
         }
     }
 }
+
+//@Composable
+//fun SearchBar() {
+//    Row (modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+//        Card(
+//            shape = RoundedCornerShape(12.dp),
+//            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+//            modifier = Modifier
+//                .weight(1f)
+//                .absolutePadding(right = 8.dp)
+//                .height(40.dp)
+//        ) {
+//            TextField(
+//                colors = TextFieldDefaults.colors(
+//                    focusedContainerColor = Color.Transparent,
+//                    unfocusedContainerColor = Color.Transparent,
+//                    disabledContainerColor = Color.Transparent,
+//                    errorContainerColor = Color.Transparent,
+//                ),
+//                value = "",
+//                onValueChange = {},
+//                placeholder = { Text("Должность, ключевые слова") },
+//            )
+//        }
+//        Card(
+//            shape = RoundedCornerShape(12.dp),
+//            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+//            modifier = Modifier.height(40.dp)
+//        ) {
+//            IconButton(onClick = { /* TODO */ }) {
+//                Icon(AppIcons.Common.FilterDefault.painterResource(), contentDescription = "Filter")
+//            }
+//        }
+//    }
+//}
 @Composable
 fun FilterBar(
     vacancyCount: Int,
@@ -267,9 +348,12 @@ fun RecommendationCard(
 @Composable
 private fun RecommendationIcon(id: String) {
     val icon = when (id) {
-        "near_vacancies" -> AppIcons.Common.Map
-        "level_up_resume" -> AppIcons.Common.Star
-        "temporary_job" -> AppIcons.Common.List
+        "near_vacancies" -> RecomendationIconModel(icon = AppIcons.Common.Map.painterResource(),
+            colorRoundIcon = MaterialTheme.customColors.customBlue)
+        "level_up_resume" -> RecomendationIconModel(icon = AppIcons.Common.Star.painterResource(),
+            colorRoundIcon = MaterialTheme.customColors.darkGreen)
+        "temporary_job" -> RecomendationIconModel(icon = AppIcons.Common.List.painterResource(),
+            colorRoundIcon = MaterialTheme.customColors.darkGreen)
         else -> null
     }
 
@@ -277,11 +361,11 @@ private fun RecommendationIcon(id: String) {
         Box(
             modifier = Modifier
                 .size(40.dp)
-                .background(color = Color.Blue, shape = CircleShape),
+                .background(color = it.colorRoundIcon, shape = CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                painter = it.painterResource(),
+                painter = it.icon,
                 contentDescription = null,
                 modifier = Modifier.size(24.dp),
                 tint = LocalContentColor.current

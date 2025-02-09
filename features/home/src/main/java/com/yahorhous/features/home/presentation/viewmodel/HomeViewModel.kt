@@ -10,6 +10,7 @@ import com.yahorhous.features.home.domain.repository.HomeRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toSet
 import kotlinx.coroutines.launch
@@ -28,6 +29,7 @@ class HomeViewModel(
     private val _favorites = MutableStateFlow<Set<String>>(emptySet())
     val favorites: StateFlow<Set<String>> = _favorites.asStateFlow()
 
+
     private val _choosenFilter = MutableStateFlow("filter")
     val choosenFilter: StateFlow<String> = _choosenFilter.asStateFlow()
 
@@ -37,23 +39,27 @@ class HomeViewModel(
 
     init {
         viewModelScope.launch {
+            favoritesRepository.getFavorites()
+                .map { vacancies -> vacancies.map { it.id }.toSet() }
+                .distinctUntilChanged()
+                .collect { _favorites.value = it }
+        }
+
+        viewModelScope.launch {
             _vacancies.value = repository.getVacancies()
             _recommendations.value = repository.getRecommendations()
-            _favorites.value = favoritesRepository.getFavorites().map { it.map { vacancy -> vacancy.id }.toSet() }
         }
     }
 
     fun toggleFavorite(vacancy: Vacancy) {
         viewModelScope.launch {
-            val updatedFavorites = _favorites.value.toMutableSet()
-            if (updatedFavorites.contains(vacancy.id)) {
+            _favorites.value = if (_favorites.value.contains(vacancy.id)) {
                 favoritesRepository.removeFavorite(vacancy.id)
-                updatedFavorites.remove(vacancy.id)
+                _favorites.value - vacancy.id
             } else {
                 favoritesRepository.addFavorite(vacancy)
-                updatedFavorites.add(vacancy.id)
+                _favorites.value + vacancy.id
             }
-            _favorites.value = updatedFavorites
         }
     }
 }
